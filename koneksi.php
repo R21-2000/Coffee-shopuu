@@ -1,30 +1,42 @@
 <?php
-$koneksi = new mysqli('localhost','root','','coffeeshopu')
-or die (mysqli_error($koneksi));
+// Konfigurasi koneksi database
+$host = 'localhost';
+$username = 'root';
+$password = '';
+$database = 'coffeeshopu';
 
-if (isset($_POST['simpan'])) {
-    $id = $_POST['id'];
-    $nmPesanan = $_POST['nmPesanan'];
-    $mdPembayaran = $_POST['mdPembayaran'];
-    $catatan = $_POST['catatan'];
-    $koneksi->query("INSERT INTO pesanan (id, nmPesanan, mdPembayaran, catatan) values ('$id','$nmPesanan','$mdPembayaran','$catatan')");
+// Membuat koneksi ke database
+$connection = new mysqli($host, $username, $password, $database);
 
-    header('location:pesanan.php');
+// Memeriksa koneksi database
+if ($connection->connect_error) {
+    die("Koneksi database gagal: " . $connection->connect_error);
 }
 
-if(isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $koneksi->query("DELETE FROM pesanan where id ='$id'");
-    header("location:pesanan.php");
-}
+// Memeriksa apakah ada data yang dikirimkan melalui metode POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Mengambil data dari formulir tambah pesanan
+    $idPesanan = $_POST['id'];
+    $nmPelanggan = $_POST['nmPelanggan'];
+    $pembayaran = $_POST['pembayaran'];
+    $catatanPesanan = $_POST['catatan'];
 
-if (isset($_POST['edit'])) {
-    $id = $_POST['id'];
-    $nmPesanan = $_POST['nmPesanan'];
-    $mdPembayaran = $_POST['mdPembayaran'];
-    $catatan = $_POST['catatan'];
-    $koneksi->query("UPDATE pesanan SET id='$id',nmPesanan='$nmPesanan',mdPembayaran='$mdPembayaran',catatan='$catatan'");
+    // Menyiapkan pernyataan SQL
+    $stmt = $connection->prepare("INSERT INTO pesanan (id, nmPelanggan, pembayaran, catatan) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $idPesanan, $nmPelanggan, $pembayaran, $catatanPesanan);
 
-    header("location:pesanan.php");
+    // Menjalankan pernyataan SQL
+    if ($stmt->execute()) {
+        // Pesanan berhasil ditambahkan, alihkan kembali ke halaman sebelumnya
+        header("Location: tambahpesanan.php");
+        exit;
+    } else {
+        // Terjadi kesalahan saat menambahkan pesanan
+        echo "Terjadi kesalahan saat menambahkan pesanan: " . $stmt->error;
+    }
+
+    // Menutup pernyataan dan koneksi
+    $stmt->close();
+    $connection->close();
 }
 ?>

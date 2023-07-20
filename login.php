@@ -1,69 +1,3 @@
-<?php
-// Konfigurasi koneksi database
-$host = 'localhost';
-$usernamedb = 'root';
-$passwordb = '';
-$database = 'coffeeshopu';
-
-// Membuat koneksi ke database
-$connection = new mysqli($host, $usernamedb, $passwordb, $database);
-
-// Memeriksa koneksi database
-if ($connection->connect_error) {
-    die("Koneksi database gagal: " . $connection->connect_error);
-}
-
-// Memeriksa apakah ada data yang dikirimkan melalui metode POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Mengambil data dari formulir login
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-
-    // Melakukan query untuk mencari pengguna dengan username yang cocok
-    $query = "SELECT * FROM users WHERE username = '$username'";
-    $result = $connection->query($query);
-
-    // Memeriksa apakah query berhasil dieksekusi
-    if ($result) {
-        // Memeriksa apakah ada pengguna dengan username yang cocok
-        if ($result->num_rows > 0) {
-            $authenticated = false;
-            
-            // Loop melalui setiap baris data
-            while ($user = $result->fetch_assoc()) {
-                // Memeriksa kecocokan password
-                if ($password === $user['password']) {
-                    // Login berhasil
-                    $authenticated = true;
-                    
-                    // Memeriksa peran pengguna (user atau admin)
-                    $role = $user['role'];
-                    if ($role === 'Admin') {
-                        // Pengguna adalah admin, alihkan ke halaman admin.php
-                        header("Location: admin.php");
-                        exit;
-                    } else {
-                        // Pengguna adalah user, alihkan ke halaman user.php
-                        header("Location: user.php");
-                        exit;
-                    }
-                }
-            }
-            
-            if (!$authenticated) {
-                // Password salah
-                $error = "Password yang Anda masukkan salah.";
-            }
-        } else {
-            // Username tidak ditemukan
-            $error = "Username tidak ditemukan.";
-        }
-    } else {
-        // Terjadi kesalahan saat menjalankan query
-        $error = "Terjadi kesalahan dalam pemrosesan login.";
-    }
-}
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -76,12 +10,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(45deg, #c49048, #ffffff);
+            background: linear-gradient(120deg, #A3dd20, #FFaa);
         }
         
         .card {
             max-width: 400px;
+            padding: 20px;
             margin: 0 auto;
+            background-color: #fffa;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(5, 5, 1, 0.3);
+        }
+
+        .card .card-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card .form-control {
+            margin-bottom: 15px;
+        }
+
+        .card .btn-primary {
+            width: 100%;
         }
     </style>
 </head>
@@ -89,37 +41,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <div class="row justify-content-center mt-5">
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title text-center">Login</h4>
-                        <?php if (isset($error)) { ?>
-                            <div class="alert alert-danger" role="alert">
-                                <?php echo $error; ?>
-                            </div>
-                        <?php } ?>
-                        <form action="login.php" method="POST">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Login</button>
-                            </div>
-                        </form>
-                    </div>
+                <div class="login-card">
+                    <h4 class="card-title">Login</h4>
+                    <?php if (isset($error)) { ?>
+                        <div class="alert alert-danger" role="alert">
+                            <?php echo $error; ?>
+                        </div>
+                    <?php } ?>
+                    <form action="login.php" method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </body>
 </html>
-
-
-<?php
-// Menutup koneksi database
-$connection->close();
-?>
